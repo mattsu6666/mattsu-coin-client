@@ -1,0 +1,4 @@
+.idea/
+go.sum
+configs/.mattsu-coin-client.yaml
+mattsu-coin-client
