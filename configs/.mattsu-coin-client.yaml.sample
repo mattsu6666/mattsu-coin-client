@@ -1,0 +1,4 @@
+privateKey: hoge
+kovanProjectId: hoge
+mattsuCoinAddress: 0x950650b9eA3270494529c64695Ae91689927AC97
+gasLimit: 5000000
