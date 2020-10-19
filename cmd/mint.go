@@ -31,8 +31,8 @@ var mintCmd = &cobra.Command{
 	Short: "min MattsuCoin",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := ether.NewMattsuCoinClientConfig(cfgFile)
-
-		tx, err := ether.Mint(mintTo, mintAmount, *cfg)
+		api := ether.NewMattsuCoinAPI(cfg)
+		tx, err := ether.Mint(mintTo, mintAmount, api)
 		if err != nil {
 			log.Fatal(err)
 		}
