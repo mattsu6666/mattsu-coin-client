@@ -25,6 +25,10 @@ jobs:
       - name: Check fmt
         run: diff -u <(echo -n) <(gofmt -d ./)
 
+      - uses: actions/checkout@v2
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+
       - name: Build
         run: make all
 

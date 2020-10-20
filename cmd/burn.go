@@ -44,7 +44,7 @@ var burnCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(burnCmd)
 	burnCmd.Flags().StringVar(&burnTo, "to", "", "to address. ex. 0xabcd...")
-	burnCmd.MarkFlagRequired("to")
+	_ = burnCmd.MarkFlagRequired("to")
 	burnCmd.Flags().Int64Var(&burnAmount, "amount", 0, "amount. ex. 1000")
-	burnCmd.MarkFlagRequired("amount")
+	_ = burnCmd.MarkFlagRequired("amount")
 }

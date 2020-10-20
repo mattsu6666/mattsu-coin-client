@@ -43,7 +43,7 @@ var mintCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(mintCmd)
 	mintCmd.Flags().StringVar(&mintTo, "to", "", "to address. ex. 0xabcd...")
-	mintCmd.MarkFlagRequired("to")
+	_ = mintCmd.MarkFlagRequired("to")
 	mintCmd.Flags().Int64Var(&mintAmount, "amount", 0, "amount. ex. 1000")
-	mintCmd.MarkFlagRequired("amount")
+	_ = mintCmd.MarkFlagRequired("amount")
 }
