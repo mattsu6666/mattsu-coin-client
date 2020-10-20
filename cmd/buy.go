@@ -28,8 +28,8 @@ var buyCmd = &cobra.Command{
 	Short: "buy eth/usd rate",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := ether.NewMattsuCoinClientConfig(cfgFile)
-
-		rate, err := ether.Buy(*cfg)
+		api := ether.NewMattsuCoinAPI(cfg)
+		rate, err := ether.Buy(cfg.MattsuCoinAddress, api)
 		if err != nil {
 			log.Fatal(err)
 		}

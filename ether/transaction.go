@@ -16,57 +16,52 @@ import (
 	"strings"
 )
 
-func Burn(to string, amount int64, cfg MattsuCoinClientConfig) (*types.Transaction, error) {
+type Transaction interface {
+	Gas() uint64
+	GasPrice() *big.Int
+	Nonce() uint64
+	To() *common.Address
+}
+
+type TransactionImpl struct {
+	tx *types.Transaction
+}
+
+func (tx *TransactionImpl) Gas() uint64         { return tx.tx.Gas() }
+func (tx *TransactionImpl) GasPrice() *big.Int  { return tx.tx.GasPrice() }
+func (tx *TransactionImpl) Nonce() uint64       { return tx.tx.Nonce() }
+func (tx *TransactionImpl) To() *common.Address { return tx.tx.To() }
+
+func Burn(to string, amount int64, api MattsuCoinAPI) (Transaction, error) {
 	_to := common.HexToAddress(to)
-	client, instance, err := clientAndInstance(cfg.KovanProjectId, common.HexToAddress(cfg.MattsuCoinAddress))
-
-	auth, err := auth(client, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := instance.Burn(auth, _to, big.NewInt(amount))
+	tx, err := api.Burn(_to, big.NewInt(amount))
 	if err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func Mint(to string, amount int64, cfg MattsuCoinClientConfig) (*types.Transaction, error) {
+func Mint(to string, amount int64, api MattsuCoinAPI) (Transaction, error) {
 	_to := common.HexToAddress(to)
-	client, instance, err := clientAndInstance(cfg.KovanProjectId, common.HexToAddress(cfg.MattsuCoinAddress))
-
-	auth, err := auth(client, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := instance.Mint(auth, _to, big.NewInt(amount))
+	tx, err := api.Mint(_to, big.NewInt(amount))
 	if err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func Buy(cfg MattsuCoinClientConfig) (*big.Int, error) {
-	client, instance, err := clientAndInstance(cfg.KovanProjectId, common.HexToAddress(cfg.MattsuCoinAddress))
-
-	auth, err := auth(client, cfg)
-	if err != nil {
-		return big.NewInt(0), err
-	}
-
-	_, err = instance.BuyLatestEthUsd(auth)
+func Buy(address string, api MattsuCoinAPI) (*big.Int, error) {
+	_, err := api.BuyLatestEthUsd()
 	if err != nil {
 		return big.NewInt(0), err
 	}
 
 	query := ethereum.FilterQuery{
-		Addresses: []common.Address{common.HexToAddress(cfg.MattsuCoinAddress)},
+		Addresses: []common.Address{common.HexToAddress(address)},
 	}
 
 	logs := make(chan types.Log)
-	_, err = client.SubscribeFilterLogs(context.Background(), query, logs)
+	_, err = api.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,13 +85,14 @@ func Buy(cfg MattsuCoinClientConfig) (*big.Int, error) {
 	return event.EthUsd, nil
 }
 
-func clientAndInstance(projectId string, address common.Address) (*ethclient.Client, *MattsuCoin, error) {
-	client, err := ethclient.Dial("wss://kovan.infura.io/ws/v3/" + projectId)
+func ClientAndInstance(cfg *MattsuCoinClientConfig) (*ethclient.Client, *MattsuCoin, error) {
+	_address := common.HexToAddress(cfg.MattsuCoinAddress)
+	client, err := ethclient.Dial("wss://kovan.infura.io/ws/v3/" + cfg.KovanProjectId)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	instance, err := NewMattsuCoin(address, client)
+	instance, err := NewMattsuCoin(_address, client)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -104,7 +100,7 @@ func clientAndInstance(projectId string, address common.Address) (*ethclient.Cli
 	return client, instance, nil
 }
 
-func auth(client *ethclient.Client, cfg MattsuCoinClientConfig) (*bind.TransactOpts, error) {
+func Auth(client *ethclient.Client, cfg *MattsuCoinClientConfig) (*bind.TransactOpts, error) {
 	privateKey, err := crypto.HexToECDSA(cfg.PrivateKey)
 	if err != nil {
 		return nil, err

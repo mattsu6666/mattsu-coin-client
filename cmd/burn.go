@@ -31,11 +31,12 @@ var burnCmd = &cobra.Command{
 	Short: "burn MattsuCoin",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := ether.NewMattsuCoinClientConfig(cfgFile)
-
-		tx, err := ether.Burn(burnTo, burnAmount, *cfg)
+		api := ether.NewMattsuCoinAPI(cfg)
+		tx, err := ether.Burn(burnTo, burnAmount, api)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		fmt.Printf("nonce: %d, gas: %d, gasPrice: %d, to: %s\n", tx.Nonce(), tx.Gas(), tx.GasPrice(), tx.To().Hex())
 	},
 }
@@ -43,7 +44,7 @@ var burnCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(burnCmd)
 	burnCmd.Flags().StringVar(&burnTo, "to", "", "to address. ex. 0xabcd...")
-	burnCmd.MarkFlagRequired("to")
+	_ = burnCmd.MarkFlagRequired("to")
 	burnCmd.Flags().Int64Var(&burnAmount, "amount", 0, "amount. ex. 1000")
-	burnCmd.MarkFlagRequired("amount")
+	_ = burnCmd.MarkFlagRequired("amount")
 }
